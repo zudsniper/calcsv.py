@@ -1,7 +1,21 @@
-# `CALCSV.py` 📠
+# `CALCSV.py` 📠  
+<sup><i>created by <a target="_blank" alt="author, zudsniper" href="https://gh.zod.tf"><code>@zudsniper</code></a> with various LLM & Chat Agent Models</i></sup>
 
 ## NAME
 **`calcsv.py`** - Classify and analyze CSV transactions.
+
+## TODO
+- [ ] Fix the MarkDown table formatting for `stat_log.md`
+- [ ] Add more classifiers (AI, Hybrid)
+- [ ] Support 'export to Google Sheets, Excel'
+- [ ] **Sort transactions by amount, date** ⭐
+  - [ ] Add `--sort|-s <date|amount> <+->` flag to specify sort order & direction
+- [ ] Add _'learning'_ mode to allow user to classify transactions and save to `static_classes.json`
+- [ ] Add _'interactive'_ mode to allow user to classify transactions and save to `static_classes.json`
+  - [ ] Add `-y` flag to skip all interactivity
+
+
+- [ ] **_GENERATE A BUDGET FROM TRANSACTION STATISTICAL ANALYSIS & GUIDED USER INPUT WORKFLOW_** ⭐⭐⭐
 
 ## SYNOPSIS
 
@@ -17,7 +31,7 @@ python calcsv.py <filepath> [-f <format> | --format <format>] [-c <classifier> |
   Path to the CSV file. (Required)
 
 - **`-f`, `--format`** *format*  
-  Specifies the format of the CSV file. Default is "date,amount,,,description".
+  Specifies the format of the CSV file. Default is "date,amount,*,,description".
 
 - **`-c`, `--classifier`** *classifier*  
   Specifies the classification method. Choices are "normal", "ai", and "hybrid". Default is "normal".
