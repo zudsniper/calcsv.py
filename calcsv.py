@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
-# v0.3.0
+# v0.3.2
 import argparse
 import csv
 import json
 import threading
 import time
 from statistics import mean, median, stdev
-from colorama import init, Fore
+from colorama import init, Fore, Back, Style
 from loguru import logger
 from tabulate import tabulate
 import sys
@@ -23,17 +23,18 @@ class Transaction:
             setattr(self, key, value)
 
 
+# Load configurations from .env
+CSV_FORMAT = config('FORMAT', default="date,amount,,,description")
+CLASSIFIER_FILE = config('CLASSIFIER_FILE', default='static_classes.json')
+DEFAULT_CLASSIFIER = config('CLASSIFIER_TYPE', default='normal')
+
 # Load static classes
 try:
-    with open('static_classes.json', 'r') as f:
+    with open(CLASSIFIER_FILE, 'r') as f:
         STATIC_CLASSES = json.load(f)
 except Exception as e:
-    logger.error(f"Failed to load static_classes.json: {e}")
+    logger.error(f"{Fore.RED}Failed to load {CLASSIFIER_FILE}: {e}{Fore.RESET}")
     sys.exit(1)
-
-# Load configurations from .env
-CSV_FORMAT = config('CSV_FORMAT', default="date,amount,,,description")
-DEFAULT_CLASSIFIER = config('DEFAULT_CLASSIFIER', default='normal')
 
 # Modify logger to be pretty
 logger.add(sys.stderr, format="{time} {level} {message}", filter="my_module", level="INFO", colorize=True)
@@ -64,6 +65,8 @@ def main():
     parser.add_argument('--format', '-f', type=str, default=CSV_FORMAT, help='CSV format.')
     parser.add_argument('--classifier', '-c', choices=['normal', 'ai', 'hybrid'], default=DEFAULT_CLASSIFIER,
                         help='Classification method.')
+    parser.add_argument('--classifier-file', '-cf', type=str, default=CLASSIFIER_FILE,
+                        help='Path to the classifier rules file.')
     args = parser.parse_args()
 
     FORMAT = args.format.split(',')
@@ -75,7 +78,7 @@ def main():
             for row in reader:
                 transactions.append(Transaction(**row))
     except Exception as e:
-        logger.error(f"Failed to read CSV file: {e}")
+        logger.error(f"{Fore.RED}Failed to read CSV file: {e}{Fore.RESET}")
         sys.exit(1)
 
     if args.classifier == 'normal':
@@ -109,7 +112,7 @@ def main():
                 f.write(tabulate(table_data, headers='firstrow', tablefmt='pipe'))
                 f.write('\n')
         except Exception as e:
-            logger.error(f"Failed to write to stat_log.md: {e}")
+            logger.error(f"{Fore.RED}Failed to write to stat_log.md: {e}{Fore.RESET}")
 
 
 if __name__ == '__main__':
@@ -122,7 +125,7 @@ if __name__ == '__main__':
     try:
         main()
     except Exception as e:
-        logger.critical(f"Fatal error encountered: {e}")
+        logger.critical(f"{Fore.RED}Fatal error encountered: {e}{Fore.RESET}")
     finally:
         # Stop the loading spinner
         stop_spinner = True
