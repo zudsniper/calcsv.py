@@ -2,3 +2,4 @@
 !/.env.template
 /venv
 /local/**
+/stat_log.md
