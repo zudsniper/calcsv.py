@@ -20,7 +20,7 @@
 ## SYNOPSIS
 
 ```shell
-python calcsv.py <filepath> [-f <format> | --format <format>] [-c <classifier> | --classifier <classifier>]
+python calcsv-pre41.py <filepath> [-f <format> | --format <format>] [-c <classifier> | --classifier <classifier>]
 ```
 
 ## DESCRIPTION
@@ -39,17 +39,17 @@ python calcsv.py <filepath> [-f <format> | --format <format>] [-c <classifier> |
 ## USAGE
 1. **Default Usage**  
    ```shell
-   python calcsv.py transactions.csv
+   python calcsv-pre41.py transactions.csv
    ```
 
 2. **Specify CSV Format**  
    ```shell
-   python calcsv.py transactions.csv --format "date,amount,description"
+   python calcsv-pre41.py transactions.csv --format "date,amount,description"
    ```
 
 3. **Using AI Classifier**  
    ```shell
-   python calcsv.py transactions.csv --classifier ai
+   python calcsv-pre41.py transactions.csv --classifier ai
    ```
 
 ## FILES

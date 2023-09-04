@@ -3,3 +3,8 @@
 /venv
 /local/**
 /stat_log.md
+
+# this application is intended to be self-sufficient in resources
+# so at the moment this shall not be committed.
+# **That is likely to change.**
+/resources/**
