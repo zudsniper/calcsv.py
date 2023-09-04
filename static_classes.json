@@ -1,0 +1,12 @@
+{
+    "gaming": ["steamlevels"],
+    "online_payments": ["paypal"],
+    "groceries": ["H-E-B", "kroger"],
+    "pharmacy": ["tarrytown pharmacy"],
+    "electronics": ["bestbuy"],
+    "clothing": ["gap", "old navy"],
+    "restaurants": ["mcdonalds", "starbucks"],
+    "entertainment": ["netflix", "spotify"],
+    "travel": ["uber", "lyft"],
+    "utilities": ["at&t", "verizon"]
+}
