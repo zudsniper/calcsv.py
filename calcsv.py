@@ -1,8 +1,6 @@
 #!/usr/bin/env python3
-# v0.4.4-failed
+# v0.5.1
 import os
-# import requests
-# import shutil
 import argparse
 import csv
 import json
@@ -19,55 +17,17 @@ from datetime import datetime
 # Initialize colorama
 init(autoreset=True)
 
-# WOW!
-# this was a massive waste of time!!!!
-# ======================================================================================================================
-# def load_figfont():
-#     """
-#     Load the nvscript figfont.
-#     If it doesn't exist, download it.
-#     """
-#     resources_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'resources')
-#     font_path = os.path.join(resources_dir, 'nvscript.flf')
-#     pyfiglet_fonts_dir = os.path.join(os.path.dirname(os.path.abspath(Figlet.setFont())), 'fonts')
-#
-#     # Ensure resources directory exists
-#     if not os.path.exists(resources_dir):
-#         logger.info(f"{Fore.GREEN}Creating resources directory...{Fore.RESET}")
-#         os.makedirs(resources_dir)
-#
-#     # Check if nvscript.flf exists
-#     if not os.path.exists(font_path):
-#         logger.info(f"{Fore.GREEN}Downloading nvscript.flf font...{Fore.RESET}")
-#         url = 'https://github.com/phracker/figlet-fonts/raw/master/nvscript.flf'
-#         response = requests.get(url)
-#         with open(font_path, 'wb') as font_file:
-#             font_file.write(response.content)
-#
-#     # Ensure the font file is readable
-#     if not os.access(font_path, os.R_OK):
-#         logger.warning(f"{Fore.YELLOW}nvscript.flf is not readable. Attempting to change permissions...{Fore.RESET}")
-#         try:
-#             os.chmod(font_path, 0o644)
-#         except PermissionError:
-#             logger.error(
-#                 f"{Fore.RED}Failed to set read permissions for nvscript.flf. Please run with sudo or set permissions manually.{Fore.RESET}")
-#             sys.exit(1)
-#
-#     # Move the font to pyfiglet's fonts directory
-#     shutil.copy2(font_path, pyfiglet_fonts_dir)
-#
-#     return 'nvscript'  # Return the font name instead of the path
-# ======================================================================================================================
 
 # Display startup message
 def display_startup_message(args, font_name):
     # Display the figfont title
-    # font_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'resources', 'nvscript.flf')
     fig = Figlet(font=font_name)
-    title = fig.renderText('calcsv.py')
-    print(Back.BLACK + Fore.WHITE + title)  # Inverted colors using colorama
-
+    title = fig.renderText('CalCSV')
+    title_length = len(title[0:title.find('\n')])
+    title = os.linesep.join([s for s in title.splitlines() if s]) # remove empty lines
+    print('=' * title_length + Fore.RESET + Back.RESET + "\n\n\n") # TODO: figure out why the fuck there are 3 newlines after the figfont
+    print(Back.BLACK + Fore.WHITE + title)
+    print('=' * title_length + Fore.RESET + Back.RESET)
     # Display environment variables and CLI flags
     env_vars = {
         'CSV_FORMAT': (CSV_FORMAT, 'default'),
@@ -78,23 +38,26 @@ def display_startup_message(args, font_name):
     }
 
     for key, value in vars(args).items():
-        if value:
+        if key:
             env_vars[key.upper()] = (value, 'CLI flag')
 
     table_data = []
     for key, (value, source) in env_vars.items():
+        # Convert value to string if it's a list
+        value_str = ', '.join(value) if isinstance(value, list) else str(value)
+
         if source == 'CLI flag':
-            table_data.append([key, Fore.YELLOW + Style.BRIGHT + value])  # Bold and yellow
+            table_data.append([key, Fore.YELLOW + Style.BRIGHT + value_str + Style.RESET_ALL])  # Bold and yellow
         elif source == '.env':
-            table_data.append([key, Fore.WHITE + value])  # White
+            table_data.append([key, Fore.WHITE + value_str + Style.RESET_ALL])  # White
         else:
-            table_data.append([key, value])
+            table_data.append([key, value_str])
 
     print(tabulate(table_data, headers=['Variable', 'Value']))
 
     # Display author's information and project link
     print("\nby @zudsniper 🚬")
-    print(Fore.BLUE + Style.UNDERLINED + "https://gh.zod.tf/calcsv.py\n")  # Blue and underlined
+    print(Fore.BLUE + Style.BRIGHT + "https://gh.zod.tf/calcsv.py\n")  # Blue and underlined
 
 
 # Define the dynamic data structure
@@ -105,13 +68,14 @@ class Transaction:
 
 
 # Load configurations from .env
-global CSV_FORMAT, DEFAULT_CLASSIFIER, CLASSIFIER_FILE, STATIC_CLASSES, START_DATE, END_DATE
+global CSV_FORMAT, DEFAULT_CLASSIFIER, CLASSIFIER_FILE, STATIC_CLASSES, START_DATE, END_DATE, LOG_LEVEL
 STATIC_CLASSES = None
 CSV_FORMAT = config('FORMAT', default="date,amount,*,,description")
 CLASSIFIER_FILE = config('CLASSIFIER_FILE', default='static_classes.json')
 DEFAULT_CLASSIFIER = config('CLASSIFIER_TYPE', default='normal')
 START_DATE = config('START_DATE', default=None)
 END_DATE = config('END_DATE', default=None)
+LOG_LEVEL = config('LOG_LEVEL', default='INFO')
 
 
 # Load static classes
@@ -123,11 +87,6 @@ def load_static_classes():
     except Exception as e:
         logger.error(f"{Fore.RED}Failed to load {CLASSIFIER_FILE}: {e}{Fore.RESET}")
         sys.exit(1)
-
-
-logger.remove(0)
-logger.add(sys.stderr, format="📠 | <green>{time:HH:mm:ss}</green> | [<level>{level}</level>] {message}", level="DEBUG",
-           colorize=True)
 
 
 def classify(transaction):
@@ -157,6 +116,7 @@ signal.signal(signal.SIGINT, signal_handler)
 signal.signal(signal.SIGTERM, signal_handler)
 
 
+# format numbers as currency, handling negative values
 def format_currency(amount):
     if amount < 0:
         return f"-${abs(amount):,.2f}"
@@ -165,12 +125,12 @@ def format_currency(amount):
 
 
 def main():
-    # Load the figfont
-    # font_name = load_figfont()
-    font_name = 'cybermedium'
+    # ======================================================================================================================
+    font_name = 'roman'
 
     global CSV_FORMAT, DEFAULT_CLASSIFIER, CLASSIFIER_FILE, START_DATE, END_DATE
 
+    # Parse CLI arguments
     parser = argparse.ArgumentParser(description='Parse and classify CSV transactions.')
     parser.add_argument('filepath', type=str, help='Path to the CSV file.')
     parser.add_argument('--format', '-f', type=str, default=CSV_FORMAT, help='CSV value format.', dest='csv_format')
@@ -180,8 +140,11 @@ def main():
                         default=config('CLASSIFIER_FILE', default=CLASSIFIER_FILE),
                         help='Path to the classifier rules file.')
     parser.add_argument('--timeframe', '-t', nargs='+', help='Timeframe for calculations in the format YYYY-mm-dd.')
+    parser.add_argument('--log_level', '-l', type=str, default=LOG_LEVEL,  # Added this line for the log level
+                        help='Log level for the logger.', dest='log_level')
     args = parser.parse_args()
 
+    # Override the default values with the CLI arguments
     if args.csv_format:
         CSV_FORMAT = args.csv_format
     if args.classifier:
@@ -195,14 +158,25 @@ def main():
         else:
             END_DATE = datetime.now().strftime('%Y-%m-%d')
 
+    # Adjusting the logger's level based on the CLI argument or environment variable
+    logger.remove(0)
+    logger.add(sys.stderr, format="📠 | <green>{time:HH:mm:ss}</green> | [<level>{level}</level>] {message}",
+               level=args.log_level,
+               colorize=True)
+
     # Display the startup message
     display_startup_message(args, font_name)
-# ======================================================================================================================
+    # ======================================================================================================================
 
+    # Load static classes
     load_static_classes()
 
+    # Parse the CSV file
     FORMAT = args.csv_format.split(',')
     transactions = []
+
+    logger.info(f"Reading CSV file '{args.filepath}'...")
+
 
     try:
         with open(args.filepath, 'r') as f:
@@ -224,6 +198,10 @@ def main():
     except Exception as e:
         logger.error(f"{Fore.RED}Failed to read CSV file: {e}{Fore.RESET}")
         sys.exit(1)
+
+    logger.info(f"Total {Style.BRIGHT}{Fore.YELLOW}potential{Style.BRIGHT} transactions: " + Fore.BLUE + str(reader.line_num) + Fore.RESET)
+    logger.info(f"Total {Style.BRIGHT}{Fore.GREEN}registered{Style.BRIGHT} transactions: " + Fore.BLUE + str(len(transactions)) + Fore.RESET)
+    logger.info(f"{Style.BRIGHT}Classifying transactions{Style.RESET_ALL} & {Style.BRIGHT}calculating statistics{Style.RESET_ALL}...")
 
     if args.classifier == 'normal':
         for transaction in transactions:
@@ -248,6 +226,16 @@ def main():
                 'std_dev': stdev(amounts) if len(amounts) > 1 else 0
             }
 
+    # Adding statistics for Uncategorized transactions
+    uncategorized_amounts = [float(t.amount) for t in transactions if t.class_name == 'Uncategorized']
+    if uncategorized_amounts:
+        stats['Uncategorized'] = {
+            'sum': sum(uncategorized_amounts),
+            'avg': mean(uncategorized_amounts),
+            'median': median(uncategorized_amounts),
+            'std_dev': stdev(uncategorized_amounts) if len(uncategorized_amounts) > 1 else 0
+        }
+
     tbl_headers = ['Class', 'Sum', 'Average', 'Median', 'Std. Dev.']
     tbl_headers = [f"{Fore.CYAN}{Style.BRIGHT}{h}{Style.RESET_ALL}{Fore.RESET}" for h in tbl_headers]
     table_data = [tbl_headers]
@@ -256,6 +244,23 @@ def main():
         table_data.append(
             [class_name, format_currency(data['sum']), format_currency(data['avg']), format_currency(data['median']),
              format_currency(data['std_dev'])])
+
+    # Adding Overall statistics
+    all_amounts = [float(t.amount) for t in transactions]
+    overall_stats = {
+        'sum': sum(all_amounts),
+        'avg': mean(all_amounts),
+        'median': median(all_amounts),
+        'std_dev': stdev(all_amounts) if len(all_amounts) > 1 else 0
+    }
+    table_data.append(['-' * 20] * 5)  # Separator
+    table_data.append(
+        ['Overall', format_currency(overall_stats['sum']), format_currency(overall_stats['avg']),
+         format_currency(overall_stats['median']), format_currency(overall_stats['std_dev'])])
+
+    # Print the table of statistics as well as the timeframe, if timeframes were specified
+    if START_DATE or END_DATE:
+        logger.info("TIMEFRAME: " + Fore.BLUE + f"{START_DATE} - {END_DATE}" + Fore.RESET)
     print(tabulate(table_data, headers='firstrow', tablefmt='pretty', stralign='center', numalign='center'))
 
 
