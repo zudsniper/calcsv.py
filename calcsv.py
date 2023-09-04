@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# v0.2.2
+# v0.3.0
 import argparse
 import csv
 import json

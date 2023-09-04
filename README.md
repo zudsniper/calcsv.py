@@ -1,16 +1,16 @@
-# CSV TRANSACTION CLASSIFIER(1) - Manual Page
+# `CALCSV` - README
 
 ## NAME
-**csv_transaction_classifier** - Classify and analyze CSV transactions.
+**`calcsv.py`** - Classify and analyze CSV transactions.
 
 ## SYNOPSIS
 
 ```shell
-python calcsv.py <filepath> [-f <format> | --format <format>] [-c <classifier> | --classifier <classifier>]
+python `calcsv.py` <filepath> [-f <format> | --format <format>] [-c <classifier> | --classifier <classifier>]
 ```
 
 ## DESCRIPTION
-**csv_transaction_classifier** is a tool to parse, classify, and analyze transactions from a CSV file. It supports various CSV formats and classification methods.
+**`calcsv.py`** is a tool to parse, classify, and analyze transactions from a CSV file. It supports various CSV formats and classification methods.
 
 ## OPTIONS
 - **`filepath`**  
